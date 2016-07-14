@@ -8,6 +8,7 @@ attr_reader :balance, :list_of_journeys, :entrance_station, :exit_station
 
   def initialize
     @balance = 0
+    @journey = Journey.new
     @list_of_journeys = []
   end
 
