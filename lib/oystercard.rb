@@ -1,46 +1,41 @@
-require_relative 'station'
+require_relative 'journey'
 
 class Oystercard
-  LIMIT = 90
-  MINIMUM_FARE = 1
-  attr_reader :balance, :entry_station, :exit_station, :journey
 
-  def initialize
+MAXIMUM_BALANCE = 90
+MINIMUM_CREDIT = 1
+MINIMUM_FARE = 1
+
+
+attr_reader :balance, :journey
+
+  def initialize(journey = Journey.new)
     @balance = 0
-    @journey = []
+    @journey = journey
   end
 
-  def top_up(money)
-    raise "Exceeds limit: #{LIMIT}" if check_limit(money)
-    @balance += money
+  def top_up(amount)
+    fail "Maximum balance of #{MAXIMUM_BALANCE} reached" if balance + amount > MAXIMUM_BALANCE
+    @balance += amount
+   end
+
+  def touch_in(current_station)
+    raise "No credit on card" if no_credit
+    @journey.start_journey(current_station)
   end
 
-  def in_journey?
-    !!entry_station
+  def touch_out(exit_station)
+    deduct(journey.fare)
+    @journey.end_journey(exit_station)
   end
 
-  def touch_in(station)
-    raise 'Balance below minimum fare' if balance < MINIMUM_FARE
-    @entry_station = station
-  end
-
-  def touch_out(station)
-    deduct(MINIMUM_FARE)
-    @exit_station = station
-    store_journey
+  def no_credit
+    @balance < MINIMUM_CREDIT
   end
 
   private
 
-  def check_limit(money)
-    (@balance + money) > LIMIT
-  end
-
-  def deduct(money)
-    @balance -= money
-  end
-
-  def store_journey
-   journey << {:entry_station => @entry_station, :exit_station => @exit_station}
+  def deduct(amount)
+    @balance -= amount
   end
 end
